@@ -55,9 +55,14 @@
   async function getUser() {
     if (!sb) return null;
 
-    const { data } = await sb.auth.getUser();
-    user = data?.user || null;
+    const { data, error } = await sb.auth.getUser();
 
+    if (error) {
+      user = null;
+      return null;
+    }
+
+    user = data?.user || null;
     return user;
   }
 
@@ -146,10 +151,12 @@
   async function loadProducts() {
     if (!sb) {
       setNotice("Setup needed: check config.js and your Supabase settings.");
+
       if ($("#productGrid")) {
         $("#productGrid").innerHTML =
           '<div class="empty-state">Connect your Supabase project to load products.</div>';
       }
+
       return;
     }
 
@@ -163,8 +170,10 @@
 
       hideNotice();
       renderProducts();
+
     } catch (e) {
       setNotice("Could not load products. " + e.message);
+
       if ($("#productGrid")) {
         $("#productGrid").innerHTML =
           '<div class="empty-state">Products could not be loaded.</div>';
@@ -183,7 +192,9 @@
         alert("Maximum available stock reached.");
         return;
       }
+
       row.quantity++;
+
     } else {
       cart.push({ id, quantity: 1 });
     }
@@ -259,6 +270,7 @@
 
     if (row.quantity < 1) {
       cart = cart.filter(x => x.id !== id);
+
     } else if (row.quantity > p.stock) {
       row.quantity = p.stock;
       alert("Maximum available stock reached.");
@@ -309,13 +321,14 @@
 
     if (error) {
       console.error("Telegram notification error:", error);
+      throw error;
     }
   }
 
   async function submitCheckout(e) {
     e.preventDefault();
 
-    // FIX: Simpan form sebelum sebarang await.
+    // Save form reference before any async operation.
     const form = e.currentTarget;
 
     if (!(form instanceof HTMLFormElement)) {
@@ -323,9 +336,7 @@
       return;
     }
 
-    // Ambil FormData semasa form masih tersedia.
     const fd = new FormData(form);
-
     const error = $("#checkoutError");
 
     if (error) error.textContent = "";
@@ -338,10 +349,12 @@
     const customerName = String(fd.get("customer_name") || "").trim();
     const whatsapp = String(fd.get("whatsapp") || "").trim();
     const paymentNote = String(fd.get("payment_note") || "").trim();
+    const device = String(fd.get("device") || "").trim();
+    const username = String(fd.get("username") || "").trim();
 
-    if (!customerName || !whatsapp) {
+    if (!customerName || !whatsapp || !device || !username) {
       if (error) {
-        error.textContent = "Please enter your name and WhatsApp number.";
+        error.textContent = "Please complete all required fields.";
       }
       return;
     }
@@ -371,6 +384,7 @@
         return;
       }
 
+      // Create order in Supabase.
       const data = await call(
         sb.rpc("create_order", {
           p_customer_name: customerName,
@@ -380,6 +394,16 @@
         })
       );
 
+      // Save device and game username to the new order.
+      await call(
+        sb.rpc("update_order_checkout_details", {
+          p_order_id: data.order_id,
+          p_device: device,
+          p_username: username
+        })
+      );
+
+      // Clear cart after order and details are saved.
       cart = [];
       updateCartCount();
 
@@ -413,8 +437,7 @@
 
       $("#successModal")?.classList.remove("hidden");
 
-      // Telegram notification.
-      // Order remains successful even if Telegram is unavailable.
+      // Send Telegram notification.
       notifyTelegram(data.order_id).catch(err => {
         console.error("Telegram notification failed:", err);
       });
@@ -428,6 +451,7 @@
         error.textContent =
           err.message || "Unable to create order. Please try again.";
       }
+
     } finally {
       if (button) {
         button.disabled = false;
