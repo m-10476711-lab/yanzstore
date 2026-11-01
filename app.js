@@ -1,3 +1,4 @@
+
 /* AIMSETTING YANZX77 storefront */
 (() => {
   const cfg = window.APP_CONFIG || {};
@@ -145,8 +146,10 @@
   async function loadProducts() {
     if (!sb) {
       setNotice("Setup needed: check config.js and your Supabase settings.");
-      $("#productGrid").innerHTML =
-        '<div class="empty-state">Connect your Supabase project to load products.</div>';
+      if ($("#productGrid")) {
+        $("#productGrid").innerHTML =
+          '<div class="empty-state">Connect your Supabase project to load products.</div>';
+      }
       return;
     }
 
@@ -162,8 +165,10 @@
       renderProducts();
     } catch (e) {
       setNotice("Could not load products. " + e.message);
-      $("#productGrid").innerHTML =
-        '<div class="empty-state">Products could not be loaded.</div>';
+      if ($("#productGrid")) {
+        $("#productGrid").innerHTML =
+          '<div class="empty-state">Products could not be loaded.</div>';
+      }
     }
   }
 
@@ -281,9 +286,13 @@
       return;
     }
 
-    $("#cartDrawer").classList.add("hidden");
-    $("#checkoutError").textContent = "";
-    $("#checkoutModal").classList.remove("hidden");
+    $("#cartDrawer")?.classList.add("hidden");
+
+    if ($("#checkoutError")) {
+      $("#checkoutError").textContent = "";
+    }
+
+    $("#checkoutModal")?.classList.remove("hidden");
   }
 
   async function notifyTelegram(orderId) {
@@ -306,36 +315,67 @@
   async function submitCheckout(e) {
     e.preventDefault();
 
-    const error = $("#checkoutError");
-    error.textContent = "";
+    // FIX: Simpan form sebelum sebarang await.
+    const form = e.currentTarget;
 
-    if (!sb) return;
-
-    const u = await getUser();
-
-    if (!u) {
-      error.textContent = "Please sign in again.";
+    if (!(form instanceof HTMLFormElement)) {
+      console.error("Checkout form not found.");
       return;
     }
 
-    const fd = new FormData(e.currentTarget);
+    // Ambil FormData semasa form masih tersedia.
+    const fd = new FormData(form);
+
+    const error = $("#checkoutError");
+
+    if (error) error.textContent = "";
+
+    if (!sb) {
+      if (error) error.textContent = "Supabase is not connected.";
+      return;
+    }
+
+    const customerName = String(fd.get("customer_name") || "").trim();
+    const whatsapp = String(fd.get("whatsapp") || "").trim();
+    const paymentNote = String(fd.get("payment_note") || "").trim();
+
+    if (!customerName || !whatsapp) {
+      if (error) {
+        error.textContent = "Please enter your name and WhatsApp number.";
+      }
+      return;
+    }
 
     const items = cart.map(x => ({
       product_id: x.id,
       quantity: x.quantity
     }));
 
-    const button = e.currentTarget.querySelector('button[type="submit"]');
+    if (!items.length) {
+      if (error) error.textContent = "Your cart is empty.";
+      return;
+    }
 
-    button.disabled = true;
-    button.textContent = "Creating order…";
+    const button = form.querySelector('button[type="submit"]');
+
+    if (button) {
+      button.disabled = true;
+      button.textContent = "Creating order…";
+    }
 
     try {
+      const u = await getUser();
+
+      if (!u) {
+        if (error) error.textContent = "Please sign in again.";
+        return;
+      }
+
       const data = await call(
         sb.rpc("create_order", {
-          p_customer_name: fd.get("customer_name").trim(),
-          p_whatsapp: fd.get("whatsapp").trim(),
-          p_payment_note: (fd.get("payment_note") || "").trim(),
+          p_customer_name: customerName,
+          p_whatsapp: whatsapp,
+          p_payment_note: paymentNote,
           p_items: items
         })
       );
@@ -343,27 +383,38 @@
       cart = [];
       updateCartCount();
 
-      $("#checkoutModal").classList.add("hidden");
+      $("#checkoutModal")?.classList.add("hidden");
 
-      $("#successText").textContent =
-        "Your order has been created successfully.";
+      if ($("#successText")) {
+        $("#successText").textContent =
+          "Your order has been created successfully.";
+      }
 
       const qr = $("#paymentQR");
-      qr.src = cfg.PAYMENT_QR_URL || "";
-      qr.style.display = cfg.PAYMENT_QR_URL ? "block" : "none";
 
-      $("#paymentName").textContent =
-        cfg.PAYMENT_NAME || cfg.STORE_NAME || "";
+      if (qr) {
+        qr.src = cfg.PAYMENT_QR_URL || "";
+        qr.style.display = cfg.PAYMENT_QR_URL ? "block" : "none";
+      }
 
-      $("#paymentAmount").textContent = money(data.total);
+      if ($("#paymentName")) {
+        $("#paymentName").textContent =
+          cfg.PAYMENT_NAME || cfg.STORE_NAME || "";
+      }
 
-      $("#paymentOrderId").textContent =
-        "Order ID: " + data.order_id;
+      if ($("#paymentAmount")) {
+        $("#paymentAmount").textContent = money(data.total);
+      }
 
-      $("#successModal").classList.remove("hidden");
+      if ($("#paymentOrderId")) {
+        $("#paymentOrderId").textContent =
+          "Order ID: " + data.order_id;
+      }
 
-      // Notify the store's Telegram chat.
-      // Order creation remains successful even if Telegram is unavailable.
+      $("#successModal")?.classList.remove("hidden");
+
+      // Telegram notification.
+      // Order remains successful even if Telegram is unavailable.
       notifyTelegram(data.order_id).catch(err => {
         console.error("Telegram notification failed:", err);
       });
@@ -371,11 +422,17 @@
       await loadProducts();
 
     } catch (err) {
-      error.textContent =
-        err.message || "Unable to create order. Please try again.";
+      console.error("Checkout error:", err);
+
+      if (error) {
+        error.textContent =
+          err.message || "Unable to create order. Please try again.";
+      }
     } finally {
-      button.disabled = false;
-      button.textContent = "Place order";
+      if (button) {
+        button.disabled = false;
+        button.textContent = "Place order";
+      }
     }
   }
 
@@ -399,24 +456,24 @@
     $("#categoryFilter")?.addEventListener("change", renderProducts);
 
     $("#cartButton")?.addEventListener("click", () => {
-      $("#cartDrawer").classList.remove("hidden");
+      $("#cartDrawer")?.classList.remove("hidden");
       renderCart();
     });
 
     $("#closeCart")?.addEventListener("click", () => {
-      $("#cartDrawer").classList.add("hidden");
+      $("#cartDrawer")?.classList.add("hidden");
     });
 
     $("#checkoutButton")?.addEventListener("click", beginCheckout);
 
     $("#closeCheckout")?.addEventListener("click", () => {
-      $("#checkoutModal").classList.add("hidden");
+      $("#checkoutModal")?.classList.add("hidden");
     });
 
     $("#checkoutForm")?.addEventListener("submit", submitCheckout);
 
     $("#closeSuccess")?.addEventListener("click", () => {
-      $("#successModal").classList.add("hidden");
+      $("#successModal")?.classList.add("hidden");
     });
   }
 
