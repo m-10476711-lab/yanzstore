@@ -1,4 +1,3 @@
-
 /* AIMSETTING YANZX77 storefront */
 (() => {
   const cfg = window.APP_CONFIG || {};
@@ -33,6 +32,7 @@
     }[c]));
 
   let products = [];
+  let categories = [];
   let cart = JSON.parse(sessionStorage.getItem("ays_cart") || "[]");
   let user = null;
 
@@ -78,6 +78,37 @@
     if (error) return false;
 
     return data?.role === "admin";
+  }
+
+  // Load categories directly from Supabase.
+  async function loadCategories() {
+    if (!sb) return [];
+
+    categories = await call(
+      sb.from("categories")
+        .select("id,name")
+        .order("name", { ascending: true })
+    );
+
+    renderCategoryFilter();
+    return categories;
+  }
+
+  function renderCategoryFilter() {
+    const filter = $("#categoryFilter");
+    if (!filter) return;
+
+    const current = filter.value;
+
+    filter.innerHTML =
+      '<option value="">All categories</option>' +
+      categories.map(c =>
+        `<option value="${esc(c.name)}">${esc(c.name)}</option>`
+      ).join("");
+
+    if (categories.some(c => c.name === current)) {
+      filter.value = current;
+    }
   }
 
   function updateCartCount() {
@@ -161,6 +192,13 @@
     }
 
     try {
+      // Categories and products are loaded independently.
+      try {
+        await loadCategories();
+      } catch (categoryError) {
+        console.error("Category loading error:", categoryError);
+      }
+
       products = await call(
         sb.from("products")
           .select("id,name,description,category,image_url,price,stock,is_active")
@@ -328,7 +366,6 @@
   async function submitCheckout(e) {
     e.preventDefault();
 
-    // Save form reference before any async operation.
     const form = e.currentTarget;
 
     if (!(form instanceof HTMLFormElement)) {
@@ -384,7 +421,6 @@
         return;
       }
 
-      // Create order in Supabase.
       const data = await call(
         sb.rpc("create_order", {
           p_customer_name: customerName,
@@ -394,7 +430,6 @@
         })
       );
 
-      // Save device and game username to the new order.
       await call(
         sb.rpc("update_order_checkout_details", {
           p_order_id: data.order_id,
@@ -403,7 +438,6 @@
         })
       );
 
-      // Clear cart after order and details are saved.
       cart = [];
       updateCartCount();
 
@@ -437,7 +471,6 @@
 
       $("#successModal")?.classList.remove("hidden");
 
-      // Send Telegram notification.
       notifyTelegram(data.order_id).catch(err => {
         console.error("Telegram notification failed:", err);
       });
@@ -508,7 +541,8 @@
     esc,
     getUser,
     checkAdmin,
-    setNotice
+    setNotice,
+    loadCategories
   };
 
   if ($("#productGrid")) {
