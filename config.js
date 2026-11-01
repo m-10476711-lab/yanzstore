@@ -10,7 +10,7 @@ window.APP_CONFIG = {
   // PAYMENT
   PAYMENT_METHOD: "DuitNow QR",
   PAYMENT_NAME: "AIMSETTING YANZX77",
-  PAYMENT_QR_URL: "https://imgur.com/a/9RHeAUG",
+  PAYMENT_QR_URL: "https://i.imgur.com/2n294vD.jpeg",
 
   // CURRENCY
   CURRENCY: "MYR"
