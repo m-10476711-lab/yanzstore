@@ -1,144 +1,160 @@
+
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Allow-Methods": "POST, OPTIONS"
 };
+
+const escapeMarkdown = (value: unknown) =>
+  String(value ?? "").replace(/([_*`\[\]])/g, "\\$1");
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
 
-  const json = (body: unknown, status = 200) =>
-    new Response(JSON.stringify(body), {
-      status,
-      headers: {
-        ...corsHeaders,
-        "Content-Type": "application/json"
-      }
-    });
-
   try {
     const authHeader = req.headers.get("Authorization");
 
     if (!authHeader) {
-      return json({ error: "Unauthorized" }, 401);
-    }
-
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
-    const botToken = Deno.env.get("TELEGRAM_BOT_TOKEN");
-    const chatId = Deno.env.get("TELEGRAM_CHAT_ID");
-
-    if (!botToken || !chatId) {
-      return json({ error: "Telegram secrets are missing." }, 500);
+      throw new Error("Unauthorized");
     }
 
     const supabase = createClient(
-      supabaseUrl,
-      supabaseAnonKey,
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_ANON_KEY")!,
       {
         global: {
-          headers: {
-            Authorization: authHeader
-          }
+          headers: { Authorization: authHeader },
         },
-        auth: {
-          persistSession: false,
-          autoRefreshToken: false
-        }
       }
     );
 
-    const {
-      data: { user },
-      error: userError
-    } = await supabase.auth.getUser();
+    const { data: userData, error: authError } =
+      await supabase.auth.getUser();
 
-    if (userError || !user) {
-      return json({ error: "Invalid user session." }, 401);
+    if (authError || !userData.user) {
+      throw new Error("Invalid user session");
     }
 
-    const body = await req.json();
-    const orderId = body.order_id;
+    const { order_id } = await req.json();
 
-    if (
-      typeof orderId !== "string" ||
-      !/^[0-9a-f-]{36}$/i.test(orderId)
-    ) {
-      return json({ error: "Invalid order ID." }, 400);
+    if (!order_id) {
+      throw new Error("Missing order ID");
     }
 
     const { data: order, error: orderError } = await supabase
       .from("orders")
-      .select("id,user_id,customer_name,whatsapp,total,status,created_at")
-      .eq("id", orderId)
-      .eq("user_id", user.id)
+      .select(
+        "id, customer_name, whatsapp, total, status, device, username, created_at"
+      )
+      .eq("id", order_id)
+      .eq("user_id", userData.user.id)
       .single();
 
     if (orderError || !order) {
-      return json({ error: "Order not found." }, 404);
+      throw new Error("Order not found");
     }
 
     const { data: items, error: itemsError } = await supabase
       .from("order_items")
-      .select("product_name,quantity,unit_price")
-      .eq("order_id", orderId);
+      .select("product_name, quantity, unit_price")
+      .eq("order_id", order_id);
 
     if (itemsError) {
-      return json({ error: "Could not load order items." }, 500);
+      throw itemsError;
     }
 
-    const itemLines = (items || []).map((item) => {
-      const subtotal = Number(item.unit_price) * Number(item.quantity);
+    const productText = (items || []).map(item =>
+      escapeMarkdown(
+        `${item.product_name} x${item.quantity}`
+      )
+    ).join(", ");
 
-      return `• ${item.product_name} x${item.quantity} — RM ${subtotal.toFixed(2)}`;
-    });
+    const orderTime = new Intl.DateTimeFormat("en-MY", {
+      timeZone: "Asia/Kuala_Lumpur",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    }).format(new Date(order.created_at));
 
     const message = [
-      "🛒 NEW ORDER — AIMSETTING YANZX77",
+      "🛒 *PAYMENT ITEM — AIMSETTING YANZX77*",
+      "━━━━━━━━━━━━━━━━━━━━",
       "",
-      `Order ID: ${order.id}`,
-      `Customer: ${order.customer_name}`,
-      `WhatsApp: ${order.whatsapp}`,
+      "Salam admin! Saya berminat untuk membuat pembelian dengan maklumat berikut:",
       "",
-      "PRODUCTS:",
-      ...itemLines,
+      `*PRODUK :* ${productText || "-"}`,
+      `*DEVICE :* ${escapeMarkdown(order.device || "-")}`,
+      `*JAM :* ${orderTime}`,
+      `*PRICE :* RM${Number(order.total).toFixed(2)}`,
+      `*USERNAME :* ${escapeMarkdown(order.username || "-")}`,
       "",
-      `TOTAL: RM ${Number(order.total).toFixed(2)}`,
-      `STATUS: ${order.status}`,
+      "━━━━━━━━━━━━━━━━━━━━",
+      `*ORDER ID :* ${escapeMarkdown(order.id)}`,
+      `*CUSTOMER :* ${escapeMarkdown(order.customer_name)}`,
+      `*WHATSAPP :* ${escapeMarkdown(order.whatsapp)}`,
+      `*STATUS :* ${escapeMarkdown(order.status)}`,
       "",
-      "Please review this order in the admin dashboard."
+      "Terima kasih, admin. Mohon bantu saya untuk proses pesanan ini. 🙏",
     ].join("\n");
 
-    const telegramResponse = await fetch(
-      `https://api.telegram.org/bot${botToken}/sendMessage`,
+    const token = Deno.env.get("TELEGRAM_BOT_TOKEN");
+    const chatId = Deno.env.get("TELEGRAM_CHAT_ID");
+
+    if (!token || !chatId) {
+      throw new Error("Telegram secrets missing");
+    }
+
+    const response = await fetch(
+      `https://api.telegram.org/bot${token}/sendMessage`,
       {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           chat_id: chatId,
-          text: message
-        })
+          text: message,
+          parse_mode: "Markdown",
+        }),
       }
     );
 
-    const telegramResult = await telegramResponse.json();
+    const result = await response.json();
 
-    if (!telegramResponse.ok || !telegramResult.ok) {
-      console.error("Telegram API error:", telegramResult);
-      return json({ error: "Telegram message could not be sent." }, 502);
+    if (!response.ok || !result.ok) {
+      throw new Error(
+        "Telegram API: " + JSON.stringify(result)
+      );
     }
 
-    return json({ success: true });
+    return new Response(
+      JSON.stringify({ success: true }),
+      {
+        headers: {
+          ...corsHeaders,
+          "Content-Type": "application/json",
+        },
+      }
+    );
 
   } catch (error) {
-    console.error(error);
-    return json({ error: "Internal server error." }, 500);
+    return new Response(
+      JSON.stringify({
+        error: error instanceof Error
+          ? error.message
+          : "Unknown error",
+      }),
+      {
+        status: 400,
+        headers: {
+          ...corsHeaders,
+          "Content-Type": "application/json",
+        },
+      }
+    );
   }
 });
