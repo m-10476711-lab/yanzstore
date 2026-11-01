@@ -1,23 +1,256 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>AIMSETTING YANZX77 | Digital Gaming Store</title>
   <meta name="description" content="Gaming sensitivity, HUD layouts and aim guides from AIMSETTING YANZX77.">
   <link rel="stylesheet" href="style.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
 </head>
+
 <body>
-<header class="topbar"><a class="brand" href="index.html"><span class="brand-mark">A</span><span>AIMSETTING <small>YANZX77</small></span></a><nav><a href="#products">Products</a><a href="account.html">My orders</a><a href="admin.html" id="adminLink" class="hidden">Admin</a></nav><div class="nav-actions"><a class="btn btn-ghost" href="account.html">Account</a><button class="btn btn-primary" id="cartButton">Cart <span id="cartCount">0</span></button></div></header>
+
+<header class="topbar">
+  <a class="brand" href="index.html">
+    <span class="brand-mark">A</span>
+    <span>AIMSETTING <small>YANZX77</small></span>
+  </a>
+
+  <nav>
+    <a href="#products">Products</a>
+    <a href="account.html">My orders</a>
+    <a href="admin.html" id="adminLink" class="hidden">Admin</a>
+  </nav>
+
+  <div class="nav-actions">
+    <a class="btn btn-ghost" href="account.html">Account</a>
+    <button class="btn btn-primary" id="cartButton">
+      Cart <span id="cartCount">0</span>
+    </button>
+  </div>
+</header>
+
 <main>
-<section class="hero wrap"><div class="hero-copy"><div class="eyebrow"><span class="live-dot"></span> DIGITAL GAMING STORE</div><h1>BUILD YOUR<br><span class="blue-text">NEXT ADVANTAGE.</span></h1><p>Settings, HUD layouts and aim guides designed to help you fine-tune your play. Pick your setup and get your files after payment is verified.</p><div class="hero-actions"><a class="btn btn-primary" href="#products">Explore products <span>↗</span></a><a class="btn btn-ghost" href="account.html">Track an order</a></div><div class="hero-stats"><div><strong>INSTANT ACCESS</strong><small>After admin approval</small></div><div><strong>MANUAL PAYMENT</strong><small>Proof reviewed securely</small></div></div></div><div class="hero-art"><div class="orbit orbit-one"></div><div class="orbit orbit-two"></div><div class="crosshair"><span></span><i></i><b></b></div><div class="art-label label-top">AIM / CONTROL / REPEAT</div><div class="art-label label-bottom">YANZX77 <span>•</span> DIGITAL LOADOUT</div></div></section>
-<section class="wrap products-section" id="products"><div class="section-head"><div><div class="eyebrow">THE CATALOGUE</div><h2>Choose your <span class="blue-text">loadout.</span></h2></div><div class="filters"><input id="searchInput" type="search" placeholder="Search products…"><select id="categoryFilter"><option value="">All categories</option><option>Sensitivity</option><option>HUD Layout</option><option>Aim Guide</option><option>Configuration</option></select></div></div><div id="notice" class="notice hidden"></div><div id="productGrid" class="product-grid"><div class="loading-card">Loading products…</div></div></section>
-<section class="wrap trust-strip"><div><span class="trust-icon">✓</span><span><strong>Secure accounts</strong><small>Supabase authentication</small></span></div><div><span class="trust-icon">↗</span><span><strong>Manual verification</strong><small>Payment reviewed by admin</small></span></div><div><span class="trust-icon">⌁</span><span><strong>Digital delivery</strong><small>Private file access</small></span></div></section>
+  <section class="hero wrap">
+    <div class="hero-copy">
+      <div class="eyebrow">
+        <span class="live-dot"></span> DIGITAL GAMING STORE
+      </div>
+
+      <h1>BUILD YOUR<br><span class="blue-text">NEXT ADVANTAGE.</span></h1>
+
+      <p>
+        Settings, HUD layouts and aim guides designed to help you fine-tune
+        your play. Pick your setup and get your files after payment is verified.
+      </p>
+
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="#products">Explore products ↗</a>
+        <a class="btn btn-ghost" href="account.html">Track an order</a>
+      </div>
+
+      <div class="hero-stats">
+        <div>
+          <strong>INSTANT ACCESS</strong>
+          <small>After admin approval</small>
+        </div>
+        <div>
+          <strong>MANUAL PAYMENT</strong>
+          <small>Proof reviewed securely</small>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero-art">
+      <div class="orbit orbit-one"></div>
+      <div class="orbit orbit-two"></div>
+      <div class="crosshair"><span></span><i></i><b></b></div>
+      <div class="art-label label-top">AIM / CONTROL / REPEAT</div>
+      <div class="art-label label-bottom">YANZX77 <span>•</span> DIGITAL LOADOUT</div>
+    </div>
+  </section>
+
+  <section class="wrap products-section" id="products">
+    <div class="section-head">
+      <div>
+        <div class="eyebrow">THE CATALOGUE</div>
+        <h2>Choose your <span class="blue-text">loadout.</span></h2>
+      </div>
+
+      <div class="filters">
+        <input id="searchInput" type="search" placeholder="Search products…">
+        <select id="categoryFilter">
+          <option value="">All categories</option>
+          <option>Sensitivity</option>
+          <option>HUD Layout</option>
+          <option>Aim Guide</option>
+          <option>Configuration</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="notice" class="notice hidden"></div>
+
+    <div id="productGrid" class="product-grid">
+      <div class="loading-card">Loading products…</div>
+    </div>
+  </section>
+
+  <section class="wrap trust-strip">
+    <div>
+      <span class="trust-icon">✓</span>
+      <span><strong>Secure accounts</strong><small>Supabase authentication</small></span>
+    </div>
+    <div>
+      <span class="trust-icon">↗</span>
+      <span><strong>Manual verification</strong><small>Payment reviewed by admin</small></span>
+    </div>
+    <div>
+      <span class="trust-icon">⌁</span>
+      <span><strong>Digital delivery</strong><small>Private file access</small></span>
+    </div>
+  </section>
 </main>
-<footer class="footer wrap"><a class="brand" href="#"><span class="brand-mark">A</span><span>AIMSETTING <small>YANZX77</small></span></a><p>Digital gaming files and guides. Only use configurations permitted by the game and its rules.</p><a href="https://wa.me/60102494327" target="_blank" rel="noopener">WhatsApp support ↗</a><small>© <span id="year"></span> AIMSETTING YANZX77</small></footer>
-<div id="cartDrawer" class="drawer-backdrop hidden"><aside class="drawer"><div class="drawer-head"><div><div class="eyebrow">YOUR SELECTION</div><h2>Your cart</h2></div><button class="icon-btn" id="closeCart" aria-label="Close cart">✕</button></div><div id="cartItems" class="cart-items"></div><div class="cart-footer"><div class="total-row"><span>Total</span><strong id="cartTotal">RM 0.00</strong></div><p class="muted">You must sign in to place an order. Stock is checked again at checkout.</p><button class="btn btn-primary btn-full" id="checkoutButton">Continue to checkout →</button></div></aside></div>
-<div id="checkoutModal" class="modal-backdrop hidden"><section class="modal"><button class="icon-btn modal-close" id="closeCheckout">✕</button><div class="eyebrow">SECURE CHECKOUT</div><h2>Complete your order</h2><p class="muted">Sign in first. Enter your contact details, then follow the manual payment instructions shown after placing your order.</p><form id="checkoutForm" class="form-stack"><label>Customer name<input name="customer_name" required maxlength="80" placeholder="Your name"></label><label>WhatsApp number<input name="whatsapp" required maxlength="24" placeholder="60123456789"></label><label>Payment note (optional)<textarea name="payment_note" maxlength="500" placeholder="Reference / note for admin"></textarea></label><div class="payment-info"><strong>Manual payment</strong><p>Payment details will be provided by the store admin. Do not send payment to an unverified account.</p></div><button class="btn btn-primary btn-full" type="submit">Place order</button><div id="checkoutError" class="error-text"></div></form></section></div>
-<div id="successModal" class="modal-backdrop hidden"><section class="modal"><div class="success-mark">✓</div><div class="eyebrow">ORDER CREATED</div><h2>Order received.</h2><p id="successText" class="muted"></p><p class="muted">Send the order number to support and follow the admin's payment instructions. Upload proof in My orders.</p><div class="modal-actions"><a class="btn btn-primary" href="account.html">Go to my orders</a><button class="btn btn-ghost" id="closeSuccess">Close</button></div></section></div>
+
+<footer class="footer wrap">
+  <a class="brand" href="#">
+    <span class="brand-mark">A</span>
+    <span>AIMSETTING <small>YANZX77</small></span>
+  </a>
+
+  <p>Digital gaming files and guides. Only use configurations permitted by the game and its rules.</p>
+
+  <a href="https://wa.me/60102494327" target="_blank" rel="noopener">
+    WhatsApp support ↗
+  </a>
+
+  <small>© <span id="year"></span> AIMSETTING YANZX77</small>
+</footer>
+
+<!-- CART -->
+<div id="cartDrawer" class="drawer-backdrop hidden">
+  <aside class="drawer">
+    <div class="drawer-head">
+      <div>
+        <div class="eyebrow">YOUR SELECTION</div>
+        <h2>Your cart</h2>
+      </div>
+      <button class="icon-btn" id="closeCart">✕</button>
+    </div>
+
+    <div id="cartItems" class="cart-items"></div>
+
+    <div class="cart-footer">
+      <div class="total-row">
+        <span>Total</span>
+        <strong id="cartTotal">RM 0.00</strong>
+      </div>
+
+      <p class="muted">
+        You must sign in to place an order. Stock is checked again at checkout.
+      </p>
+
+      <button class="btn btn-primary btn-full" id="checkoutButton">
+        Continue to checkout →
+      </button>
+    </div>
+  </aside>
+</div>
+
+<!-- CHECKOUT -->
+<div id="checkoutModal" class="modal-backdrop hidden">
+  <section class="modal">
+    <button class="icon-btn modal-close" id="closeCheckout">✕</button>
+
+    <div class="eyebrow">SECURE CHECKOUT</div>
+    <h2>Complete your order</h2>
+
+    <p class="muted">
+      Enter your contact details. Your payment QR will appear after the order is created.
+    </p>
+
+    <form id="checkoutForm" class="form-stack">
+      <label>
+        Customer name
+        <input name="customer_name" required maxlength="80" placeholder="Your name">
+      </label>
+
+      <label>
+        WhatsApp number
+        <input name="whatsapp" required maxlength="24" placeholder="60123456789">
+      </label>
+
+      <label>
+        Payment note (optional)
+        <textarea name="payment_note" maxlength="500" placeholder="Reference / note for admin"></textarea>
+      </label>
+
+      <div class="payment-info">
+        <strong>Manual E-Wallet Payment</strong>
+        <p>Payment instructions and QR will be shown after placing your order.</p>
+      </div>
+
+      <button class="btn btn-primary btn-full" type="submit">
+        Place order
+      </button>
+
+      <div id="checkoutError" class="error-text"></div>
+    </form>
+  </section>
+</div>
+
+<!-- SUCCESS AND PAYMENT QR -->
+<div id="successModal" class="modal-backdrop hidden">
+  <section class="modal">
+    <div class="success-mark">✓</div>
+
+    <div class="eyebrow">ORDER CREATED</div>
+    <h2>Order received.</h2>
+
+    <p id="successText" class="muted"></p>
+
+    <div class="payment-info">
+      <strong>SCAN TO PAY</strong>
+
+      <p id="paymentName"></p>
+
+      <img
+        id="paymentQR"
+        src=""
+        alt="E-wallet payment QR"
+        style="
+          width:100%;
+          max-width:260px;
+          display:block;
+          margin:16px auto;
+          border-radius:12px;
+          background:white;
+          padding:8px;
+        "
+      >
+
+      <p><strong id="paymentAmount"></strong></p>
+      <p id="paymentOrderId" class="muted"></p>
+
+      <small>
+        Please enter the exact order amount in your e-wallet app.
+        Keep your payment receipt for verification.
+      </small>
+    </div>
+
+    <p class="muted">
+      After payment, upload your payment proof in My orders.
+    </p>
+
+    <div class="modal-actions">
+      <a class="btn btn-primary" href="account.html">Go to my orders</a>
+      <button class="btn btn-ghost" id="closeSuccess">Close</button>
+    </div>
+  </section>
+</div>
+
 <script src="app.js"></script>
-</body></html>
+</body>
+</html>
