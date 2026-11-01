@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="en">
 <head>
@@ -168,23 +169,59 @@
     <h2>Complete your order</h2>
 
     <p class="muted">
-      Enter your contact details. Your payment QR will appear after the order is created.
+      Enter your contact and game details. Your payment QR will appear after the order is created.
     </p>
 
     <form id="checkoutForm" class="form-stack">
+
       <label>
         Customer name
-        <input name="customer_name" required maxlength="80" placeholder="Your name">
+        <input
+          name="customer_name"
+          required
+          maxlength="80"
+          placeholder="Your name"
+        >
       </label>
 
       <label>
         WhatsApp number
-        <input name="whatsapp" required maxlength="24" placeholder="60123456789">
+        <input
+          name="whatsapp"
+          required
+          maxlength="24"
+          placeholder="60123456789"
+        >
+      </label>
+
+      <label>
+        Device
+        <select name="device" required>
+          <option value="">Select your device</option>
+          <option value="Android">Android</option>
+          <option value="iOS">iOS</option>
+          <option value="PC">PC</option>
+          <option value="Other">Other</option>
+        </select>
+      </label>
+
+      <label>
+        Username (Game)
+        <input
+          name="username"
+          required
+          maxlength="80"
+          placeholder="Enter your game username"
+        >
       </label>
 
       <label>
         Payment note (optional)
-        <textarea name="payment_note" maxlength="500" placeholder="Reference / note for admin"></textarea>
+        <textarea
+          name="payment_note"
+          maxlength="500"
+          placeholder="Reference / note for admin"
+        ></textarea>
       </label>
 
       <div class="payment-info">
